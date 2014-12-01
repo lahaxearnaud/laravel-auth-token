@@ -10,24 +10,28 @@ namespace Tappleby\AuthToken;
 
 use Illuminate\Support\Manager;
 
-class AuthTokenManager extends Manager {
+class AuthTokenManager extends Manager
+{
 
-  protected function createDatabaseDriver() {
-    $provider = $this->createDatabaseProvider();
-    $users = $this->app['auth']->driver()->getProvider();
+    protected function createDatabaseDriver()
+    {
+        $provider = $this->createDatabaseProvider();
+        $users    = $this->app['auth']->driver()->getProvider();
 
-    return new AuthTokenDriver($provider, $users);
-  }
+        return new AuthTokenDriver($provider, $users);
+    }
 
-  protected function createDatabaseProvider() {
-    $connection = $this->app['db']->connection();
-    $encrypter = $this->app['encrypter'];
-    $hasher = new HashProvider($this->app['config']['app.key']);
+    protected function createDatabaseProvider()
+    {
+        $connection = $this->app['db']->connection();
+        $encrypter  = $this->app['encrypter'];
+        $hasher     = new HashProvider($this->app['config']['app.key']);
 
-    return new DatabaseAuthTokenProvider($connection, 'ta_auth_tokens', $encrypter, $hasher);
-  }
+        return new DatabaseAuthTokenProvider($connection, 'ta_auth_tokens', $encrypter, $hasher);
+    }
 
-  public function getDefaultDriver() {
-    return 'database';
-  }
+    public function getDefaultDriver()
+    {
+        return 'database';
+    }
 }

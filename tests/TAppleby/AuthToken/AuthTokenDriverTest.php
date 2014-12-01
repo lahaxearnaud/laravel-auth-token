@@ -7,122 +7,132 @@
 
 use Mockery as m;
 
-class AuthTokenDriverTest extends PHPUnit_Framework_TestCase {
+class AuthTokenDriverTest extends PHPUnit_Framework_TestCase
+{
 
-  public function tearDown()
-  {
-    m::close();
-  }
+    public function tearDown()
+    {
+        m::close();
+    }
 
-  public function setUp() {
-    m::mock('Illuminate\Auth\UserInterface');
-  }
+    public function setUp()
+    {
+        m::mock('Illuminate\Auth\UserInterface');
+    }
 
-  public function testValidateReturnsFalseNullToken() {
-    $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
-    $users = m::mock('Illuminate\Auth\UserProviderInterface');
+    public function testValidateReturnsFalseNullToken()
+    {
+        $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
+        $users  = m::mock('Illuminate\Auth\UserProviderInterface');
 
-    $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
-
-
-    $this->assertFalse( $driver->validate(null) );
-  }
-
-  public function testValidateReturnsFalseInvalidToken() {
-    $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
-    $users = m::mock('Illuminate\Auth\UserProviderInterface');
-
-    $tokens->shouldReceive('find')->once()->andReturnNull();
-
-    $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
-
-    $this->assertFalse( $driver->validate('bad_token') );
-  }
-
-  public function testFilterReturnsFalseValidTokenMissingUser() {
-    $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
-    $users = m::mock('Illuminate\Auth\UserProviderInterface');
-
-    $tokens->shouldReceive('find')->once()->andReturn( new \Tappleby\AuthToken\AuthToken(1, 'public', 'private') );
-    $users->shouldReceive('retrieveByID')->once()->andReturnNull();
-
-    $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
-
-    $this->assertFalse( $driver->validate('good_token') );
-  }
-
-  public function testValidateReturnsUsers() {
-    $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
-    $users = m::mock('Illuminate\Auth\UserProviderInterface');
-
-    $tokens->shouldReceive('find')->once()->andReturn( new \Tappleby\AuthToken\AuthToken(1, 'public', 'private') );
-
-    $user = m::mock('StdClass');
-    $users->shouldReceive('retrieveByID')->once()->andReturn( $user );
+        $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
 
 
-    $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
-    $u = $driver->validate('good_token');
+        $this->assertFalse($driver->validate(null));
+    }
 
-    $this->assertEquals($user, $u);
-  }
+    public function testValidateReturnsFalseInvalidToken()
+    {
+        $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
+        $users  = m::mock('Illuminate\Auth\UserProviderInterface');
 
-  public function testUserFromAuthToken() {
-    $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
-    $users = m::mock('Illuminate\Auth\UserProviderInterface');
-    $authToken = m::mock('Tappleby\AuthToken\AuthToken');
+        $tokens->shouldReceive('find')->once()->andReturnNull();
 
-    $user = m::mock('StdClass');
-    $users->shouldReceive('retrieveByID')->once()->andReturn( $user );
-    $authToken->shouldReceive('getAuthIdentifier')->once()->andReturn(1);
+        $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
 
-    $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
-    $u = $driver->user( $authToken );
+        $this->assertFalse($driver->validate('bad_token'));
+    }
 
-    $this->assertEquals($user, $u);
-  }
+    public function testFilterReturnsFalseValidTokenMissingUser()
+    {
+        $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
+        $users  = m::mock('Illuminate\Auth\UserProviderInterface');
 
-  public function testAttemptReturnsFalseOnNullUser() {
-    $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
-    $users = m::mock('Illuminate\Auth\UserProviderInterface');
+        $tokens->shouldReceive('find')->once()->andReturn(new \Tappleby\AuthToken\AuthToken(1, 'public', 'private'));
+        $users->shouldReceive('retrieveByID')->once()->andReturnNull();
 
-    $users->shouldReceive('retrieveByCredentials')->once()->andReturnNull();
+        $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
 
-    $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
+        $this->assertFalse($driver->validate('good_token'));
+    }
 
-    $this->assertFalse( $driver->attempt( array() ) );
-  }
+    public function testValidateReturnsUsers()
+    {
+        $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
+        $users  = m::mock('Illuminate\Auth\UserProviderInterface');
 
-  public function testAttempReturnsFalseOnFailedCredentials() {
-    $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
-    $users = m::mock('Illuminate\Auth\UserProviderInterface');
-    $user = m::mock('Illuminate\Auth\UserInterface');
+        $tokens->shouldReceive('find')->once()->andReturn(new \Tappleby\AuthToken\AuthToken(1, 'public', 'private'));
 
-    $users->shouldReceive('retrieveByCredentials')->once()->andReturn($user);
-    $users->shouldReceive('validateCredentials')->once()->andReturn(false);
+        $user = m::mock('StdClass');
+        $users->shouldReceive('retrieveByID')->once()->andReturn($user);
 
-    $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
 
-    $this->assertFalse( $driver->attempt( array() ) );
-  }
+        $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
+        $u      = $driver->validate('good_token');
 
-  public function  testAttemptPurgesAndReturnsAuthToken() {
-    $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
-    $users = m::mock('Illuminate\Auth\UserProviderInterface');
-    $user = m::mock('Illuminate\Auth\UserInterface');
+        $this->assertEquals($user, $u);
+    }
 
-    $authToken = m::mock('Tappleby\AuthToken\AuthToken');
+    public function testUserFromAuthToken()
+    {
+        $tokens    = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
+        $users     = m::mock('Illuminate\Auth\UserProviderInterface');
+        $authToken = m::mock('Tappleby\AuthToken\AuthToken');
 
-    $users->shouldReceive('retrieveByCredentials')->once()->andReturn($user);
-    $users->shouldReceive('validateCredentials')->once()->andReturn(true);
+        $user = m::mock('StdClass');
+        $users->shouldReceive('retrieveByID')->once()->andReturn($user);
+        $authToken->shouldReceive('getAuthIdentifier')->once()->andReturn(1);
 
-    $tokens->shouldReceive('purge')->once();
-    $tokens->shouldReceive('create')->once()->andReturn($authToken);
+        $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
+        $u      = $driver->user($authToken);
 
-    $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
+        $this->assertEquals($user, $u);
+    }
 
-    $token = $driver->attempt(array());
+    public function testAttemptReturnsFalseOnNullUser()
+    {
+        $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
+        $users  = m::mock('Illuminate\Auth\UserProviderInterface');
 
-    $this->assertEquals($authToken, $token);
-  }
+        $users->shouldReceive('retrieveByCredentials')->once()->andReturnNull();
+
+        $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
+
+        $this->assertFalse($driver->attempt(array()));
+    }
+
+    public function testAttempReturnsFalseOnFailedCredentials()
+    {
+        $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
+        $users  = m::mock('Illuminate\Auth\UserProviderInterface');
+        $user   = m::mock('Illuminate\Auth\UserInterface');
+
+        $users->shouldReceive('retrieveByCredentials')->once()->andReturn($user);
+        $users->shouldReceive('validateCredentials')->once()->andReturn(false);
+
+        $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
+
+        $this->assertFalse($driver->attempt(array()));
+    }
+
+    public function  testAttemptPurgesAndReturnsAuthToken()
+    {
+        $tokens = m::mock('Tappleby\AuthToken\AuthTokenProviderInterface');
+        $users  = m::mock('Illuminate\Auth\UserProviderInterface');
+        $user   = m::mock('Illuminate\Auth\UserInterface');
+
+        $authToken = m::mock('Tappleby\AuthToken\AuthToken');
+
+        $users->shouldReceive('retrieveByCredentials')->once()->andReturn($user);
+        $users->shouldReceive('validateCredentials')->once()->andReturn(true);
+
+        $tokens->shouldReceive('purge')->once();
+        $tokens->shouldReceive('create')->once()->andReturn($authToken);
+
+        $driver = new \Tappleby\AuthToken\AuthTokenDriver($tokens, $users);
+
+        $token = $driver->attempt(array());
+
+        $this->assertEquals($authToken, $token);
+    }
 }
